@@ -6,11 +6,16 @@ This document outlines the real-time trajectory tracking strategy for a differen
 
 The QBot Platform is a Differential Drive Wheeled Mobile Robot (DDWMR) designed for research and educational purposes. It serves as a robust testbed for developing and validating control algorithms.
 
+<img src="https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/bot_image.png?raw=true" alt="QBot Image" style="width: 200px; float: right; margin-left: 20px;">
+
 ### 1.1. Physical Parameters
-* **Mass of QBot (including batteries):** $2.2 \text{ kg}$
-* **Moment of Inertia (I):** $0.0757 \text{ kg} \cdot \text{m}^2$
-* **Radius of each wheel (R):** $0.0345 \text{ m}$
-* **Distance between wheels (d):** $0.192 \text{ m}$
+
+- **Mass of QBot (including batteries):** 2.2 kg  
+- **Moment of Inertia (I):** 0.0757 kg·m²  
+- **Radius of each wheel (R):** 0.0345 m  
+- **Distance between wheels (d):** 0.192 m  
+
+
 
 ### 1.2. Hardware Components
 * **Onboard Computational Unit:** Raspberry Pi 4 (4GB RAM) for real-time processing and control.
@@ -26,6 +31,8 @@ The QBot Platform is a Differential Drive Wheeled Mobile Robot (DDWMR) designed 
 ## 2. Bot Kinematics
 
 The QBot's kinematics are described by the standard unicycle model, representing the robot as a single point in a 2D plane defined by its pose.
+
+<img src="https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/schematic.png?raw=true" alt="QBot Image" style="width: 200px; float: right; margin-left: 20px;">
 
 ### 2.1. Robot Pose
 The pose of the robot in a global coordinate frame is defined by the vector $q=[x,y,\theta]^{T}$, where $(x,y)$ are the Cartesian coordinates of the robot's center point and $\theta$ is its orientation angle with respect to the X-axis.
@@ -43,10 +50,12 @@ The robot's overall linear velocity, $v_{cc}$, and angular velocity, $\omega_{cc
 ### 2.4. Non-holonomic Constraint
 A fundamental characteristic of a DDWMR is its non-holonomic constraint, which prevents it from moving sideways. This means the robot's velocity component perpendicular to its orientation must be zero:
 * $\dot{x}\sin\theta-\dot{y}\cos\theta=0$
-
 ### 2.5. Complete Kinematic Model
+
 The complete kinematic model of the QBot Platform, which describes the evolution of its pose over time, is given by the following set of equations:
-$$\begin{bmatrix} \dot{x} \\ \dot{y} \\ \dot{\theta} \end{bmatrix} = \begin{bmatrix} \cos\theta & 0 \\ \sin\theta & 0 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} v_{cc} \\ \omega_{cc} \end{bmatrix}$$
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/Screenshot%202025-07-17%20133125.png?raw=true" alt="QBot Image" style="width: 100%; float: right; margin-left: 20px;">
+
 This model is used for linearization and the design of the LQR controller.
 
 ## 3. LQR Setup
@@ -68,12 +77,35 @@ Where:
 * **F Matrix:** $F=Q$ - terminal state cost.
 
 ### 3.3. Linearized Model
-The system is linearized around the reference trajectory at each time step. The linearized model is:
-$$\dot{X}=AX+Bu$$
-Where:
-* **A Matrix:** $A=\begin{bmatrix}0&0&-v\sin\theta\\ 0&0&v\cos\theta\\ 0&0&0\end{bmatrix}$
 
-* **B Matrix:** $B=\begin{bmatrix}\cos\theta&0\\ \sin\theta&0\\ 0&1\end{bmatrix}$
+The system is linearized around the reference trajectory at each time step. The linearized model is:
+
+$$
+\dot{X} = AX + Bu
+$$
+
+Where:
+
+**A Matrix:**
+
+$$
+A = \begin{bmatrix}
+0 & 0 & -v\sin\theta \\
+0 & 0 & v\cos\theta \\
+0 & 0 & 0
+\end{bmatrix}
+$$
+
+**B Matrix:**
+
+$$
+B = \begin{bmatrix}
+\cos\theta & 0 \\
+\sin\theta & 0 \\
+0 & 1
+\end{bmatrix}
+$$
+
 
 ### 3.4. Reference Trajectories
 
@@ -82,10 +114,12 @@ Where:
 * $y_{ref}(t)=R(1-\cos(\omega t))$
 * $\theta_{ref}(t)=\tan^{-1}(\frac{dy_{ref}}{dt}/\frac{dx_{ref}}{dt})$
 
+  <img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/track_0.4.png?raw=true" alt="QBot Image" style="width: 50%; float: right; margin-left: 20px;">
+
 Nominal control inputs for the circular trajectory are:
 * $v_{nom}=R\omega$
 * $\omega_{nom}=\omega$
-* $u_{nom}=[\begin{matrix}v_{nom}\\ \omega_{nom}\end{matrix}]$
+* u_nom = [ v_nom ; ω_nom ]ᵀ
 
 #### Path 2: Smooth Cosine Trajectory
 The reference trajectory is defined as:
@@ -93,14 +127,23 @@ The reference trajectory is defined as:
 * $y_{ref}(t)=0.1t+\cos(0.1\pi t)-1$
 * $\theta_{ref}(t)=\tan^{-1}(\frac{dy_{ref}}{dt}/\frac{dx_{ref}}{dt})$
 
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/cosine_path.png?raw=true" alt="QBot Image" style="width: 50%; float: right; margin-left: 20px;">
 Derivatives for nominal velocities are taken as:
 * $\frac{dx_{ref}}{dt}=0.1$
 * $\frac{dy_{ref}}{dt}=0.1-0.1\pi\sin(0.1\pi t)$
 
 Hence, the nominal linear and angular velocities are:
-* $v_{nom}(t)=\sqrt{(\frac{dx_{ref}}{dt})^{2}+(\frac{dy_{ref}}{dt})^{2}}$
-* $\omega_{nom}(t)=\frac{d\theta_{ref}}{dt}$
-* $u_{nom}(t)=[\begin{matrix}v_{nom}(t)\\ \omega_{nom}(t)\end{matrix}]$
+- $v_{nom} = R\omega$
+- $\omega_{nom} = \omega$
+
+Nominal control vector:
+
+$$
+u_{nom} = \begin{bmatrix}
+v_{nom} \\
+\omega_{nom}
+\end{bmatrix}
+$$
 
 ### 3.5. Control Input Calculation
 At each step, the gain K is retrieved based on the current time and applied to compute the control input:
@@ -110,10 +153,9 @@ $$u=u_{nom}-K(X-X_{ref})$$
 
 The LQR is implemented inside a MATLAB function block in Simulink. The Riccati equation is solved using `ode45` over a backward time horizon.
 
-### 4.1. Hardware I/O Test Configuration
-The Simulink model depicted in Figure 5 represents the hardware I/O test configuration for the QBot Platform by Quanser. This setup is designed to facilitate real-time control and state estimation for the differential drive wheeled mobile robot (DDWMR).
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/lqr_setup.jpg?raw=true" alt="QBot Image" style="width: 100%; float: right; margin-left: 20px;">
 
-### 4.2. Architecture Overview
+### 4.1. Architecture Overview
 1. **Input Processing:** The model begins with the acquisition of wheel speed data (in radians per second) from the encoders, which measure the angular velocities of the left and right wheels. These inputs are fed into the Inverse Kinematics (IK) block.
 2. **Inverse Kinematics (IK) Block:** The IK block processes the wheel speed data to compute the robot's state vector, consisting of the Cartesian coordinates $(x, y)$ and the orientation angle $(\theta)$. This block transforms the individual wheel velocities into the robot's linear velocity $(v)$ and angular velocity $(\omega)$, accounting for the non-holonomic constraints of the DDWMR.
 3. **Controller Block:** The computed state vector is passed to the LQR controller, which is implemented as a MATLAB function block. The LQR controller solves the Riccati equation iteratively to determine the optimal feedback gain matrix. This gain is applied to minimize a cost function that balances state deviation and control effort, producing the optimal control inputs $(v, \omega)$.
@@ -131,22 +173,35 @@ The LQR controller's performance was validated by tracking two different traject
 
 #### Simulation Results:
 * **Trajectory Tracking:** Figure 6(a) demonstrates near-perfect trajectory tracking. The measured trajectory (blue) aligns very closely with the reference circular path (red dashed), indicating excellent tracking accuracy.
-* **Velocity Response:** Figures 7 & 8 present the linear velocity ($v$) and angular velocity ($\omega$) over time. Both signals remain stable and consistent after the initial overshoot.
-* **Control Effort:** Figure 9 depicts the LQR control inputs ($u_1, u_2$). These efforts remain within expected bounds, contributing to smooth and precise tracking.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/trajectory_0.4_sim.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
+* **Velocity and Angular velocity Response:** Figures 7 & 8 present the linear velocity ($v$) and angular velocity ($\omega$) over time. Both signals remain stable and consistent after the initial overshoot.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/linear_velocity_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/omega_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
 
 #### Experimental Results:
 * **Trajectory Tracking:** Figure 6(b) shows the experimental $x-y$ position vs reference. The measured trajectory on hardware closely follows the reference path.
-* **Velocity Response:** Figures 8, 10, and 11 show the real linear and angular velocity responses for different radii. The velocity responses show stable behavior after the initial overshoot.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/tracking_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
+* **Velocity and Angular velocity Response:** Figures 8, 10, and 11 show the real linear and angular velocity responses for different radii. The velocity responses show stable behavior after the initial overshoot.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/tracking_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/tracking_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
 * **Control Effort:** Figure 12 shows the controller effort for 0.45m and 0.5m radii. The control efforts are observed to be within reasonable limits.
 
 ### 5.2. Case 2: Arbitrary Path (Smooth Cosine Trajectory)
 
 #### Simulation Results:
 * **Trajectory Tracking Comparison:** Figure 13 compares simulated (left) and experimental (right) trajectory tracking. In both cases, the robot's measured path (blue) closely follows the reference path (red dashed), validating the control strategy. Minor deviations in the experimental plot are due to real-world factors such as sensor noise and actuation delays.
-* **Velocity Response:** Figure 14 presents the linear velocity ($v$) and angular velocity ($\omega$) over time. Both signals remain smooth and consistent, without significant overshoot or oscillations, reflecting the controller's ability to maintain stable motion.
-* **Control Effort:** Figure 15 shows the LQR control inputs ($u_1, u_2$) required to follow the cosine path. The efforts remain within expected limits, and since the y-axis is scaled by $10^{-5}$, it indicates minimal control effort and efficient controller performance.
+* **Velocity and Angular velocity Response:** Figure 14 presents the linear velocity ($v$) and angular velocity ($\omega$) over time. Both signals remain smooth and consistent, without significant overshoot or oscillations, reflecting the controller's ability to maintain stable motion.
 
 #### Experimental Results:
 * **Trajectory Tracking:** The hardware implementation successfully tracks the smooth cosine path.
-* **Velocity Response:** Figure 15(a) and 15(b) show the real linear and angular velocity responses.
+* **Velocity and Angular velocity Response:** Figure 15(a) and 15(b) show the real linear and angular velocity responses.
 * **Control Effort:** Figure 15(c) and 15(d) show the controller efforts for 0.45m and 0.5m radii. The control efforts remain within expected limits.
