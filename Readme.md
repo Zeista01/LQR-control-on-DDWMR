@@ -165,6 +165,14 @@ The LQR is implemented inside a MATLAB function block in Simulink. The Riccati e
 
 ## 5. Results
 
+### For Circular Trajectory
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/lqr_cir.gif?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
+### For Cosine Trajectory
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/lqr_cos.gif?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
 The LQR controller's performance was validated by tracking two different trajectories: a circular path and a smooth cosine path. For each, both simulation and hardware implementation results are included.
 
 **Note on Initial Overshoot:** The robot remains stationary for the first 2 seconds. During this delay, the reference point advances, resulting in a large initial error and a corresponding overshoot in both $v$ and $\omega$. However, after this transient phase, the controller successfully brings the bot onto the trajectory.
@@ -189,16 +197,24 @@ The LQR controller's performance was validated by tracking two different traject
 
 * **Velocity and Angular velocity Response:** Figures 8, 10, and 11 show the real linear and angular velocity responses for different radii. The velocity responses show stable behavior after the initial overshoot.
 
-<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/tracking_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/v_0.4_white.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
 
-<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/tracking_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/w_0.4_white.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
 
 * **Control Effort:** Figure 12 shows the controller effort for 0.45m and 0.5m radii. The control efforts are observed to be within reasonable limits.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/Controller effort_0.4.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/controller effort_0.45.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/control effort_0.5.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
 
 ### 5.2. Case 2: Arbitrary Path (Smooth Cosine Trajectory)
 
 #### Simulation Results:
 * **Trajectory Tracking Comparison:** Figure 13 compares simulated (left) and experimental (right) trajectory tracking. In both cases, the robot's measured path (blue) closely follows the reference path (red dashed), validating the control strategy. Minor deviations in the experimental plot are due to real-world factors such as sensor noise and actuation delays.
+
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/xy_cos.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+<img src= "https://github.com/Zeista01/LQR-control-on-DDWMR/blob/main/Results/xy_plot_lqr_exp_arb.png?raw=true" alt="QBot Image" style="width: 30%; float: right; margin-left: 20px;">
+
 * **Velocity and Angular velocity Response:** Figure 14 presents the linear velocity ($v$) and angular velocity ($\omega$) over time. Both signals remain smooth and consistent, without significant overshoot or oscillations, reflecting the controller's ability to maintain stable motion.
 
 #### Experimental Results:
